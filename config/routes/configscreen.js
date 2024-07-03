@@ -10,6 +10,11 @@ const {buildingvariable} = require('../controller/ctrl-config');
 const {campusvariable} = require('../controller/ctrl-config');
 const {addbuildingvariable} = require('../controller/ctrl-config');
 const {addcampusvariable} = require('../controller/ctrl-config');
+const {equipmentvariable} = require('../controller/ctrl-config');
+const {getequipmentvariable} = require('../controller/ctrl-config');
+const {addequipmentvariableopration} = require('../controller/ctrl-config');
+const {deleteequipmentvariableoperation} = require('../controller/ctrl-config');
+const {retrieveequipmentvariable} = require('../controller/ctrl-config');
 
 
 
@@ -44,6 +49,12 @@ router.get('/ecc/v1/buildingvariable',buildingvariable)
 router.get('/ecc/v1/campusvariable',campusvariable)
 router.post('/ecc/v1/addbuildingvariable',addbuildingvariable)
 router.post('/ecc/v1/addcampusvariable',addcampusvariable)
+router.get('/ecc/v1/equipmentvariable',equipmentvariable)
+router.get('/ecc/v1/getequipmentvariable',getequipmentvariable)
+router.post('/ecc/v1/addequipmentvariableopration',addequipmentvariableopration)
+router.delete('/ecc/v1/deleteequipmentvariableoperation',deleteequipmentvariableoperation)
+router.get('/ecc/v1/retrieveequipmentvariable',retrieveequipmentvariable)
+
 
 
 
