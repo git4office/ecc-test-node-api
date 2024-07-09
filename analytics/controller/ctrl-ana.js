@@ -1414,6 +1414,58 @@ const dashboardlogin = (req,res)=>{
     })
   }
 
+
+  const getbuildingvariablevalue = async (req, res) => {
+
+    console.log(req.originalUrl)
+    dbName = config.databse
+    const pool = new sql.ConnectionPool(config);
+  
+    try {
+      await pool.connect();
+      const request = pool.request();
+  
+      buildingName = req.query.buildingname
+      bvarid = req.query.bvarid
+      cvarid = 'CVAR-' + bvarid.split("-")[1]
+      BVOTableSQL = "select * FROM [" + dbName + "].[ECCAnalytics].[BuildingVariables_Operation]  where [buildingname] = '" + buildingName + "' and [bvarid] = '" + bvarid + "';"
+      records = await request.query(BVOTableSQL)
+      if (records['recordsets'][0].length > 0) {
+        return res.status(200).json({ "bvarvalue": records['recordsets'][0][0]['bvarvalue'] })
+      } else {
+        splittedValue = bvarid.split("-")
+        buildingSQL = "select campusname FROM [" + dbName + "].[ECCAnalytics].[Buildings]  where [buildingname] = '" + buildingName + "';"
+  
+        records = await request.query(buildingSQL)
+        if (records['recordsets'][0].length < 1) {
+          return res.status(200).json('no data')
+  
+        }
+        campusName = records['recordsets'][0][0]['campusname']
+  
+        campusVarOpSQL = "select * FROM [" + dbName + "].[ECCAnalytics].[CampusVariables_Operation]  where [campusname] = '" + campusName + "' and [cvarid] = '" + cvarid + "';"
+        campusVarOpRecords = await request.query(campusVarOpSQL)
+  
+        if (campusVarOpRecords['recordsets'][0].length > 0) {
+          return res.status(200).json({ "cvarvalue": campusVarOpRecords['recordsets'][0][0]['cvarvalue'] })
+        } else {
+          return res.status(200).json('no data')
+        }
+  
+      }
+    } catch (err) {
+      console.error('Error with SQL Server:', err);
+    } finally {
+      // Close the connection pool
+      pool.close();
+  
+    }
+  
+  
+  }
+  
+
+
 /*********************************************TEST API ********************************************************* */
 const test = (req,res)=>{
     var qid = req.query.id;
@@ -1470,6 +1522,7 @@ module.exports = {
     dashboardlogin,
     dashboardlogout,
     avgdpval,
+    getbuildingvariablevalue,
     test
     
 }

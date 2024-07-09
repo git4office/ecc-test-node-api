@@ -2,7 +2,6 @@ const express = require('express');
 const sql = require('mssql/msnodesqlv8');
 
 const router = express.Router();
-const {test}  = require('../controller/ctrl-config');
 const {projview,updatetask,deleteproject,postprojectview,login,logout,deleteuser,updateuser,getbuilding,getcampus}  = require('../controller/ctrl-config');
 const {getcity,getcountry,getdevices,getusers,adduser,subequipmentdatapoint,subequipmentlist,postdatapoint,addsubequipment}  = require('../controller/ctrl-config');
 const {addequipment,equipmentlist,updateproject,getdatapointsforconfig,updatedatapoint,deletedatapoint,updateuserpassword}  = require('../controller/ctrl-config');
@@ -15,10 +14,16 @@ const {getequipmentvariable} = require('../controller/ctrl-config');
 const {addequipmentvariableopration} = require('../controller/ctrl-config');
 const {deleteequipmentvariableoperation} = require('../controller/ctrl-config');
 const {retrieveequipmentvariable} = require('../controller/ctrl-config');
+const {addbuildingvariableoperation} = require('../controller/ctrl-config');
+const {updatebuildingvariableoperation} = require('../controller/ctrl-config');
+const {addcampusvariableoperation} = require('../controller/ctrl-config');
+const {updatecampusvariableoperation} = require('../controller/ctrl-config');
+const {deletebuildingvariableoperation} = require('../controller/ctrl-config');
+const {deletecampusvariableoperation} = require('../controller/ctrl-config');
+const {getbuildingvariablevalue} = require('../controller/ctrl-config');
 
 
 
-router.get('/ecc/v1/test',test)
 router.get('/ecc/v1/projview',projview)
 router.get('/ecc/v1/updatetask',updatetask)
 router.get('/ecc/v1/deleteproject',deleteproject)
@@ -54,6 +59,13 @@ router.get('/ecc/v1/getequipmentvariable',getequipmentvariable)
 router.post('/ecc/v1/addequipmentvariableopration',addequipmentvariableopration)
 router.delete('/ecc/v1/deleteequipmentvariableoperation',deleteequipmentvariableoperation)
 router.get('/ecc/v1/retrieveequipmentvariable',retrieveequipmentvariable)
+router.post('/ecc/v1/addbuildingvariableoperation',addbuildingvariableoperation)
+router.put('/ecc/v1/updatebuildingvariableoperation',updatebuildingvariableoperation)
+router.post('/ecc/v1/addcampusvariableoperation',addcampusvariableoperation)
+router.put('/ecc/v1/updatecampusvariableoperation',updatecampusvariableoperation)
+router.delete('/ecc/v1/deletebuildingvariableoperation',deletebuildingvariableoperation)
+router.delete('/ecc/v1/deletecampusvariableoperation',deletecampusvariableoperation)
+router.get('/ecc/v1/getbuildingvariablevalue',getbuildingvariablevalue)
 
 
 

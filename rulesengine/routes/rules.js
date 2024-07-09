@@ -7,6 +7,7 @@ const {datapoints,totaldatapoints,postdatapointvalue,addrules,getinputdatapointv
 const {createtimerrecord,getpointdescription}  = require('../controller/ctrl-rules');
 const {getruletimerrecord} = require('../controller/ctrl-rules');
 const {updateallruletimerrecord} = require('../controller/ctrl-rules');
+const {getdatapointsforrulesengine} = require('../controller/ctrl-rules');
 
 
 const urlPart = '/ecc/v1/'
@@ -30,6 +31,7 @@ router.post('/ecc/v1/createtimerrecord',createtimerrecord)
 router.get('/ecc/v1/getpointdescription',getpointdescription)
 router.get('/ecc/v1/getruletimerrecord',getruletimerrecord)
 router.post('/ecc/v1/updateallruletimerrecord',updateallruletimerrecord)
+router.get('/ecc/v1/getdatapointsforrulesengine',getdatapointsforrulesengine)
 
 
 //router.get('/ecc/v1/updatetask',updatetask)
