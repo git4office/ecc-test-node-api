@@ -631,13 +631,13 @@ const closealarm_9_7_2024 = (req, res) => {
 
 }
 
-const closealarm = async (req, res) => {
+const closealarm = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
 
   alarmid = req.body.alarmid
-  modifier = req.query.modifier
+  // ruleno = req.body.ruleno
   equipment = req.body.equipment
   ruleid = req.body.ruleid
 
@@ -646,18 +646,16 @@ const closealarm = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     var data = [];
 
-    query = "update [" + dbName + "].[ECCAnalytics].Alarm set [Alarm].[alarmstatus] = 0, [Alarm].[alarmofftimestamp] = CURRENT_TIMESTAMP from [" + dbName + "].[ECCAnalytics].[Alarm] Alarm where [Alarm].[alarmid] = " + alarmid + "; "
+    query = "update  Alarm set [Alarm].[alarmstatus] = 0, [Alarm].[alarmofftimestamp] = CURRENT_TIMESTAMP from [" + dbName + "].[ECCAnalytics].[Alarm] Alarm where [Alarm].[alarmid] = " + alarmid + "; "
     //query2 = " update  Ruletimer set [Ruletimer].[timer] = 0 from ["+dbName+"].[ECCAnalytics].[Ruletimer] Ruletimer where [Ruletimer].[workflowname] = '"+ruleno+"' and [Ruletimer].[ruleid] = "+ruleid+";"
-    query2 = " update  [" + dbName + "].[ECCAnalytics].[Ruletimer] set [Ruletimer].[timer] = 0 from [" + dbName + "].[ECCAnalytics].[Ruletimer] Ruletimer where [Ruletimer].[workflowname] = '" + ruleid + "' and [Ruletimer].[equipment] = '" + equipment + "';"
+    query2 = " update  Ruletimer set [Ruletimer].[timer] = 0 from [" + dbName + "].[ECCAnalytics].[Ruletimer] Ruletimer where [Ruletimer].[workflowname] = '" + ruleid + "' and [Ruletimer].[equipment] = '" + equipment + "';"
     //updated on 30th April 2024 on request by Sumaya 
-    alarmhistoryUpdateSQL = "update  [" + dbName + "].[ECCAnalytics].[Alarm_History] set alarmofftimestamp = CURRENT_TIMESTAMP, alarmstatus = 0,modifier = '"+modifier+"' where [Alarm_History].[alarmid] = " + alarmid + ";"
-    query = query + query2 + alarmhistoryUpdateSQL
-
+    query = query + query2
+  
     records = await request.query(query)
-    console.log(query)
     return res.status(200).json({ 'status': 'success' })
 
 
@@ -754,16 +752,14 @@ const addtask_9_7_2024 = (req, res) => {
 }
 
 
-const addtask = async (req, res) => {
+const addtask = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
 
   alarmid = req.body.alarmid
   taskname = req.body.taskname
-  modifier = req.body.modifier
-
-  console.log(req.body);
+  //console.log(req.body);
   // return 0;
   //nameOfBuilding = req.body.buildingname
   //nameOfEquipment = req.body.equipmentname
@@ -774,12 +770,12 @@ const addtask = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     var data = [];
     maxsql = "SELECT MAX(recordid) as maxid FROM [" + dbName + "].[ECCAnalytics].[Task]"
 
     records = await request.query(maxsql)
-
+ 
     if (records['recordsets'][0][0]['maxid'] == null) {
       taskid = "EA-TKT-1"
     }
@@ -791,16 +787,13 @@ const addtask = async (req, res) => {
     //console.log(query2)
     //return 0;
     updatequery = "update alarm set [alarm].[taskstatus] = 1 from [" + dbName + "].[ECCAnalytics].[alarm] alarm  where [alarm].[alarmid] = " + alarmid + ";"
-    console.log(req.body.modifier)
+    //console.log(query2)
     //return 0;
     //sql = "INSERT INTO ECCAnalytics.Task (taskid,alarmid,taskname,taskpriority,taskassigneddate,buildingname,equipmentname,taskstatus,escalationstage) VALUES ('"+taskid.toString()+""
     //return res.status(200).json(query2)
-    taskHistorySQL = " INSERT INTO [" + dbName + "].[ECCAnalytics].[Task_History] ([created_by],[recordid],[taskid],[alarmid],[taskname],[taskpriority],[taskassigneddate],[buildingname],[associatedequiptype],[escalationstage],[taskstatus],[taskassignedemail],[historydate]) VALUES ('" + req.body.modifier + "',(SELECT TOP (1) [recordid] FROM [" + dbName + "].[ECCAnalytics].[Task] order by recordid desc),(SELECT TOP (1) [taskid] FROM [" + dbName + "].[ECCAnalytics].[Task] order by recordid desc)," + req.body.alarmid + ",'" + req.body.taskname + "','" + req.body.taskprioirty + "', CURRENT_TIMESTAMP,'" + req.body.buildingname + "','" + req.body.equipmentname + "','" + req.body.escalationstage + "', '1','" + req.body.taskassignedemail + "',CURRENT_TIMESTAMP  ); "
-    //query2 = query2 + updatequery
-    query2 = query2 + updatequery + taskHistorySQL
-    //console.log(taskHistorySQL)
+    query2 = query2 + updatequery
     await request.query(query2)
-    console.log(taskHistorySQL)
+
     return res.status(200).json({ 'status': 'success' })
 
   } catch (err) {
@@ -943,7 +936,7 @@ const taskfilterdata_9_7_2024 = (req, res) => {
 }
 
 
-const taskfilterdata_11_07_2024 = async (req, res) => {
+const taskfilterdata = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -953,7 +946,7 @@ const taskfilterdata_11_07_2024 = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
 
     var query = "SELECT [T1].*, [T4].[cityname],[T3].[campusname] FROM [" + dbName + "].[ECCAnalytics].[Task] T1"
     query += " inner join [" + dbName + "].[ECCAnalytics].[Buildings] T2 "
@@ -967,171 +960,67 @@ const taskfilterdata_11_07_2024 = async (req, res) => {
     //  query += " inner join ["+dbName+"].[ECCAnalytics].[SubEquipments] T6 "
     // query += " on [T1].subequipmenttype = [T6].subequipmenttype where 1 = 1"
     query += " AND  [T1].[taskstatus] = 1"
-
-
+  
+  
     //const campus = req.body.campus;
-
+  
     if (typeof req.body.country !== 'undefined') {
       // query = "SELECT [Alarm].[alarmid],[Alarm].[datapointrecordid] ,[Alarm].[ruleid] ,[Alarm].[deviceid] ,[Alarm].[analysisname] ,[Alarm].[analyticsummary] ,[Alarm].[measuretype] ,[Alarm].[costavoided] ,[Alarm].[energysaved] ,[Alarm].[alarmstatus]  ,[Alarm].[alarmontimestamp],[Alarm].[alarmofftimestamp],[Alarm].[escalationstage],[Alarm].[buildingname],[Alarm].[taskstatus] "
       query += " and  [T5].countryname = '" + req.body.country + "'"
       // return res.status(200).json(sql)
-
-
+  
+  
     }
-
-
+  
+  
     if (typeof req.body.city !== 'undefined') {
       // query = "SELECT [T1].[alarmid],[T1].[datapointrecordid] ,[T1].[ruleid] ,[T1].[deviceid] ,[T1].[analysisname] ,[T1].[analyticsummary] ,[T1].[measuretype] ,[T1].[costavoided] ,[T1].[energysaved] ,[T1].[alarmstatus]  ,[T1].[alarmontimestamp],[T1].[alarmofftimestamp],[T1].[escalationstage],[T1].[buildingname],[T1].[taskstatus],[Countries].countryname"
       query += " and [T4].cityname = '" + req.body.city + "'"
       // return res.status(200).json(sql)
-
-
+  
+  
     }
-
+  
     if (typeof req.body.campus !== 'undefined') {
       // query = "SELECT [Alarm].[alarmid],[Alarm].[datapointrecordid] ,[Alarm].[ruleid] ,[Alarm].[deviceid] ,[Alarm].[analysisname] ,[Alarm].[analyticsummary] ,[Alarm].[measuretype] ,[Alarm].[costavoided] ,[Alarm].[energysaved] ,[Alarm].[alarmstatus]  ,[Alarm].[alarmontimestamp],[Alarm].[alarmofftimestamp],[Alarm].[escalationstage],[Alarm].[buildingname],[Alarm].[taskstatus],[Countries].countryname"
       query += " and [T3].campusname = '" + req.body.campus + "'"
       //return res.status(200).json(sql)
-
-
+  
+  
     }
-
-
+  
+  
     if (typeof req.body.building !== 'undefined') {
       //query = "SELECT [Alarm].[alarmid],[Alarm].[datapointrecordid] ,[Alarm].[ruleid] ,[Alarm].[deviceid] ,[Alarm].[analysisname] ,[Alarm].[analyticsummary] ,[Alarm].[measuretype] ,[Alarm].[costavoided] ,[Alarm].[energysaved] ,[Alarm].[alarmstatus]  ,[Alarm].[alarmontimestamp],[Alarm].[alarmofftimestamp],[Alarm].[escalationstage],[Alarm].[buildingname],[Alarm].[taskstatus],[Countries].countryname"
       query += " and [T2].buildingname = '" + req.body.building + "'"
       // return res.status(200).json(sql)
-
-
+  
+  
     }
-
+  
     if (typeof req.body.equipment !== 'undefined') {
       // query = "SELECT [Alarm].[alarmid],[Alarm].[datapointrecordid] ,[Alarm].[ruleid] ,[Alarm].[deviceid] ,[Alarm].[analysisname] ,[Alarm].[analyticsummary] ,[Alarm].[measuretype] ,[Alarm].[costavoided] ,[Alarm].[energysaved] ,[Alarm].[alarmstatus]  ,[Alarm].[alarmontimestamp],[Alarm].[alarmofftimestamp],[Alarm].[escalationstage],[Alarm].[buildingname],[Alarm].[taskstatus],[Devices].[equipmentname]"
       query += " and [T6].[equipmenttype] = '" + req.body.equipment + "'"
       //return res.status(200).json(sql)
-
-
+  
+  
     }
-
+  
     if (typeof req.body.dt !== 'undefined') {
       //query += " AND FORMAT(taskassigneddate,'dd-MM-yyyy') = '"+req.body.dt+"'"        
       // return res.status(200).json(sql)
       query += " AND FORMAT(taskassigneddate,'dd-MM-yyyy')  between   '" + req.body.dt + "' and  '" + req.body.todt + "'"
-
-
-
+  
+  
+  
     }
-
-
+  
+  
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
 
   } catch (err) {
-
-    console.error('Error with SQL Server:', err);
-
-  } finally {
-
-    // Close the connection pool
-
-    pool.close();
-  }
-
-
-}
-
-const taskfilterdata = async (req, res) => {
-  console.log(req.originalUrl)
-  dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
-  try {
-
-    await pool.connect();
-
-    const request = pool.request();
-
-
-    var query = "SELECT [T1].*, [T4].[cityname],[T3].[campusname] FROM [" + dbName + "].[ECCAnalytics].[Task] T1"
-    query += " inner join [" + dbName + "].[ECCAnalytics].[Buildings] T2 "
-    query += " on [T1].buildingname = [T2].buildingname "
-    query += "inner join [" + dbName + "].[ECCAnalytics].[Campuses] T3 "
-    query += "ON [T3].[campusname] = [T2].[campusname] "
-    query += "inner join [" + dbName + "].[ECCAnalytics].[Cities] T4 "
-    query += "on [T3].[cityname] = [T4].[cityname] "
-    query += " inner join [" + dbName + "].[ECCAnalytics].[Countries] T5"
-    query += " on [T4].[countryname] = [T5].[countryname] "
-
-    query += " inner join [" + dbName + "].[ECCAnalytics].[Alarm] T6"
-    query += " on [T6].[alarmid] = [T1].[alarmid] "
-
-    //  query += " inner join ["+dbName+"].[ECCAnalytics].[SubEquipments] T6 "
-    // query += " on [T1].subequipmenttype = [T6].subequipmenttype where 1 = 1"
-    //query += " AND  [T1].[taskstatus] = 1"
-    query += " where  [T1].[taskstatus] = 1"
-
-
-    //const campus = req.body.campus;
-
-    if (typeof req.body.country !== 'undefined') {
-      // query = "SELECT [Alarm].[alarmid],[Alarm].[datapointrecordid] ,[Alarm].[ruleid] ,[Alarm].[deviceid] ,[Alarm].[analysisname] ,[Alarm].[analyticsummary] ,[Alarm].[measuretype] ,[Alarm].[costavoided] ,[Alarm].[energysaved] ,[Alarm].[alarmstatus]  ,[Alarm].[alarmontimestamp],[Alarm].[alarmofftimestamp],[Alarm].[escalationstage],[Alarm].[buildingname],[Alarm].[taskstatus] "
-      query += " and  [T5].countryname = '" + req.body.country + "'"
-      // return res.status(200).json(sql)
-
-
-    }
-
-
-    if (typeof req.body.city !== 'undefined') {
-      // query = "SELECT [T1].[alarmid],[T1].[datapointrecordid] ,[T1].[ruleid] ,[T1].[deviceid] ,[T1].[analysisname] ,[T1].[analyticsummary] ,[T1].[measuretype] ,[T1].[costavoided] ,[T1].[energysaved] ,[T1].[alarmstatus]  ,[T1].[alarmontimestamp],[T1].[alarmofftimestamp],[T1].[escalationstage],[T1].[buildingname],[T1].[taskstatus],[Countries].countryname"
-      query += " and [T4].cityname = '" + req.body.city + "'"
-      // return res.status(200).json(sql)
-
-
-    }
-
-    if (typeof req.body.campus !== 'undefined') {
-      // query = "SELECT [Alarm].[alarmid],[Alarm].[datapointrecordid] ,[Alarm].[ruleid] ,[Alarm].[deviceid] ,[Alarm].[analysisname] ,[Alarm].[analyticsummary] ,[Alarm].[measuretype] ,[Alarm].[costavoided] ,[Alarm].[energysaved] ,[Alarm].[alarmstatus]  ,[Alarm].[alarmontimestamp],[Alarm].[alarmofftimestamp],[Alarm].[escalationstage],[Alarm].[buildingname],[Alarm].[taskstatus],[Countries].countryname"
-      query += " and [T3].campusname = '" + req.body.campus + "'"
-      //return res.status(200).json(sql)
-
-
-    }
-
-
-    if (typeof req.body.building !== 'undefined') {
-      //query = "SELECT [Alarm].[alarmid],[Alarm].[datapointrecordid] ,[Alarm].[ruleid] ,[Alarm].[deviceid] ,[Alarm].[analysisname] ,[Alarm].[analyticsummary] ,[Alarm].[measuretype] ,[Alarm].[costavoided] ,[Alarm].[energysaved] ,[Alarm].[alarmstatus]  ,[Alarm].[alarmontimestamp],[Alarm].[alarmofftimestamp],[Alarm].[escalationstage],[Alarm].[buildingname],[Alarm].[taskstatus],[Countries].countryname"
-      query += " and [T2].buildingname = '" + req.body.building + "'"
-      // return res.status(200).json(sql)
-
-
-    }
-
-    if (typeof req.body.equipment !== 'undefined') {
-      // query = "SELECT [Alarm].[alarmid],[Alarm].[datapointrecordid] ,[Alarm].[ruleid] ,[Alarm].[deviceid] ,[Alarm].[analysisname] ,[Alarm].[analyticsummary] ,[Alarm].[measuretype] ,[Alarm].[costavoided] ,[Alarm].[energysaved] ,[Alarm].[alarmstatus]  ,[Alarm].[alarmontimestamp],[Alarm].[alarmofftimestamp],[Alarm].[escalationstage],[Alarm].[buildingname],[Alarm].[taskstatus],[Devices].[equipmentname]"
-      //query += " and [T6].[equipmenttype] = '" + req.body.equipment + "'"
-      query += "AND [T6].equipmentname in (select [Project].equipmentname from [" + dbName + "].[ECCAnalytics].[Project] "
-      query += " where [equipmentid] = (SELECT [equipmentid]  FROM [" + dbName + "].[ECCAnalytics].[Equipments]  where equipmenttype = '" + req.body.equipment + "')) "
-
-    }
-
-    if (typeof req.body.dt !== 'undefined') {
-      //query += " AND FORMAT(taskassigneddate,'dd-MM-yyyy') = '"+req.body.dt+"'"        
-      // return res.status(200).json(sql)
-      query += " AND FORMAT(taskassigneddate,'dd-MM-yyyy')  between   '" + req.body.dt + "' and  '" + req.body.todt + "'"
-
-
-
-    }
-
-
-    records = await request.query(query)
-    console.log(query)
-    return res.status(200).json(records['recordsets'][0])
-
-  } catch (err) {
-    console.log(query)
 
     console.error('Error with SQL Server:', err);
 
@@ -1186,7 +1075,7 @@ const countryforcombo_9_7_2024 = (req, res) => {
 }
 
 
-const countryforcombo = async (req, res) => {
+const countryforcombo = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -1196,12 +1085,12 @@ const countryforcombo = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
 
     var query = "SELECT [countryname]  FROM  [" + dbName + "].[ECCAnalytics].[Countries]"
 
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
 
 
@@ -1257,21 +1146,21 @@ const cityforcombo_9_7_2024 = (req, res) => {
   })
 }
 
-const cityforcombo = async (req, res) => {
+const cityforcombo = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
 
-  try {
+   try {
 
     await pool.connect();
 
     const request = pool.request();
-
+ 
     var query = "SELECT [cityname]  FROM  [" + dbName + "].[ECCAnalytics].[Cities]"
 
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
 
 
@@ -1328,7 +1217,7 @@ const campusforcombo_9_7_2024 = (req, res) => {
 }
 
 
-const campusforcombo = async (req, res) => {
+const campusforcombo = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -1338,15 +1227,15 @@ const campusforcombo = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     var data = [];
 
     var query = "SELECT [campusname] as campus  FROM  [" + dbName + "].[ECCAnalytics].[Campuses]"
 
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
-
+	
 
   } catch (err) {
 
@@ -1404,7 +1293,7 @@ const buildingforcombo_9_7_2024 = (req, res) => {
 }
 
 
-const buildingforcombo = async (req, res) => {
+const buildingforcombo = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -1415,13 +1304,13 @@ const buildingforcombo = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     var data = [];
 
     var query = "SELECT [buildingname] as building FROM  [" + dbName + "].[ECCAnalytics].[Buildings]"
 
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
 
 
@@ -1478,7 +1367,7 @@ const citycampus_9_7_2024 = (req, res) => {
   })
 }
 
-const citycampus = async (req, res) => {
+const citycampus = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -1490,12 +1379,12 @@ const citycampus = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
 
     var query = "SELECT Building.[buildingname],Campuses.[campusname],Cities.[cityname]  FROM  [" + dbName + "].[ECCAnalytics].[Buildings] Building inner join [" + dbName + "].[ECCAnalytics].[Campuses] Campuses  on Building.[campusname] = Campuses.[campusname] inner join [" + dbName + "].[ECCAnalytics].[Cities] Cities  on Cities.[cityname] = Campuses.[cityname] where Building.[buildingname] = '" + building + "'"
 
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
 
 
@@ -1594,7 +1483,7 @@ const avgdatapointvalue_9_7_2024 = (req, res) => {
   })
 }
 
-const avgdatapointvalue = async (req, res) => {
+const avgdatapointvalue = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -1608,7 +1497,7 @@ const avgdatapointvalue = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     var data = [];
 
     var query = "SELECT AVG(convert(float,[DataPointValue].[datapointvalue])) as avg"
@@ -1618,9 +1507,9 @@ const avgdatapointvalue = async (req, res) => {
     query += " where [Devices].equipmentname='" + equipmentname + " and [DataPoint].[isenergyvalue] = 1' ) and FORMAT(dated,'dd-MM-yyyy HH:mm:ss') >'" + dt + "'"
 
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
-
+	
 
   } catch (err) {
 
@@ -1859,7 +1748,7 @@ const closetask_9_7_2024 = (req, res) => {
 
 }
 
-const closetask_5_8_2024 = async (req, res) => {
+const closetask = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -1873,13 +1762,13 @@ const closetask_5_8_2024 = async (req, res) => {
   ruleid = req.body.ruleid
   feedback = '4'
 
-
+ 
   try {
 
     await pool.connect();
 
     const request = pool.request();
-
+ 
     var data = [];
 
     query = " update Task set [Task].[taskstatus] = '0',  [Task].[taskcloseddate] = CURRENT_TIMESTAMP, [Task].[taskcloseddesc] = '" + closingdesc + "', [Task].[closingdesc] = '" + closingdesc + "', [Task].[feedback] = '" + feedback + "' from  [" + dbName + "].[ECCAnalytics].[Task] Task where [Task].[alarmid] = " + alarmid + ";"
@@ -1887,62 +1776,9 @@ const closetask_5_8_2024 = async (req, res) => {
     //query3 = " update Ruletimer set [Ruletimer].[timer] = 0 from  ["+dbName+"].[ECCAnalytics].[Ruletimer] Ruletimer where [Ruletimer].[workflowname] = '"+ruleno+"';"
     query3 = " update Ruletimer set [Ruletimer].[timer] = 0 from  [" + dbName + "].[ECCAnalytics].[Ruletimer] Ruletimer where [Ruletimer].[workflowname] = '" + ruleid + "' and equipment = '" + equipment + "';"
     query = query + query2 + query3
-
+  
     records = await request.query(query)
-
-    return res.status(200).json({ 'status': 'success' })
-
-
-  } catch (err) {
-
-    console.error('Error with SQL Server:', err);
-
-  } finally {
-
-    // Close the connection pool
-
-    pool.close();
-  }
-
-
-}
-
-const closetask = async (req, res) => {
-  console.log(req.originalUrl)
-  dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
-
-  modifier = req.query.modifier
-  alarmid = req.body.alarmid
-  closingdesc = req.body.closingdesc
-  costavoided = req.body.costavoided
-  energysaved = req.body.energysaved
-  equipment = req.body.equipment
-  ruleid = req.body.ruleid
-  feedback = '4'
-
-
-  try {
-
-    await pool.connect();
-
-    const request = pool.request();
-
-    var data = [];
-
-    query = " update Task set [Task].[taskstatus] = '0',  [Task].[taskcloseddate] = CURRENT_TIMESTAMP, [Task].[taskcloseddesc] = '" + closingdesc + "', [Task].[closingdesc] = '" + closingdesc + "', [Task].[feedback] = '" + feedback + "' from  [" + dbName + "].[ECCAnalytics].[Task] Task where [Task].[alarmid] = " + alarmid + ";"
-    query2 = " update Alarm set [Alarm].[costavoided] = " + costavoided + ", [Alarm].[energysaved] = " + energysaved + ", [Alarm].[alarmstatus] = 0, [Alarm].[alarmofftimestamp] = CURRENT_TIMESTAMP,  [Alarm].[taskstatus] = '2' from  [" + dbName + "].[ECCAnalytics].[Alarm] Alarm where [Alarm].[alarmid] = " + alarmid + ";"
-    //query3 = " update Ruletimer set [Ruletimer].[timer] = 0 from  ["+dbName+"].[ECCAnalytics].[Ruletimer] Ruletimer where [Ruletimer].[workflowname] = '"+ruleno+"';"
-    query3 = " update Ruletimer set [Ruletimer].[timer] = 0 from  [" + dbName + "].[ECCAnalytics].[Ruletimer] Ruletimer where [Ruletimer].[workflowname] = '" + ruleid + "' and equipment = '" + equipment + "';"
-
-    taskHistoryUpdateSQL = " update [" + dbName + "].[ECCAnalytics].[Task_History] set [Task_History].[taskstatus] = '2',  [Task_History].[taskcloseddate] = CURRENT_TIMESTAMP, [Task_History].[taskcloseddesc] = '" + closingdesc + "', [Task_History].[closingdesc] = '" + closingdesc + "', [Task_History].[feedback] = '" + feedback + "', closed_by = '" + modifier + "' where [Task_History].[alarmid] = " + alarmid + ";"
-
-    query = query + query2 + query3 + taskHistoryUpdateSQL
-
-    records = await request.query(query)
-    console.log(query)
-
+ 
     return res.status(200).json({ 'status': 'success' })
 
 
@@ -2007,7 +1843,7 @@ const buildingname_9_7_2024 = (req, res) => {
   })
 }
 
-const buildingname = async (req, res) => {
+const buildingname = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -2020,7 +1856,7 @@ const buildingname = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
 
     var query = " SELECT  Project.buildingname "
 
@@ -2032,7 +1868,7 @@ const buildingname = async (req, res) => {
 
     records = await request.query(query)
     return res.status(200).json(records['recordsets'][0])
-
+	
 
   } catch (err) {
 
@@ -2095,7 +1931,7 @@ const equipmentname_9_7_2024 = (req, res) => {
 }
 
 
-const equipmentname = async (req, res) => {
+const equipmentname = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -2108,7 +1944,7 @@ const equipmentname = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
 
     var query = " SELECT Devices.equipmentname "
 
@@ -2118,7 +1954,7 @@ const equipmentname = async (req, res) => {
     query += " where  DataPointValue.[datapointrecordid] = " + datapointrecordid + " AND DataPointValue.[deviceid] = " + deviceid + ";"
 
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
 
 
@@ -2184,7 +2020,7 @@ const email_9_7_2024 = (req, res) => {
 }
 
 
-const email = async (req, res) => {
+const email = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -2195,13 +2031,13 @@ const email = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     var data = [];
 
     query = "SELECT  [recordid],[ruleid],[equipmentid],[associatedequipmentid],[analysisid],[duration],[escalationduration],[pointsconsidered],[alarm],[recommendations],[measure],[priority],[multiplicationfactor] FROM  [" + dbName + "].[ECCAnalytics].[Rules] where [Rules].[ruleid] = '" + req.query.ruleid + "';"
 
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
 
 
@@ -2264,7 +2100,7 @@ const addalarmdata_9_7_2024 = (req, res) => {
 }
 
 
-const addalarmdata = async (req, res) => {
+const addalarmdata = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -2292,7 +2128,7 @@ const addalarmdata = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     query = "INSERT INTO  [" + dbName + "].[ECCAnalytics].[Alarm] ([datapointrecordid],[ruleid],[deviceid],[analysisname],[analyticsummary],[measuretype],[alarmstatus],[buildingname],[alarmontimestamp],[escalationstage],[ruleno],[equipmentname]) VALUES (" + datapointrecordid + ",'" + ruleid + "','" + deviceid + "','" + analysisname + "','" + analyticsummary + "','" + measuretype + "'," + alarmstatus + ",'" + building + "',CURRENT_TIMESTAMP,'" + escalationstage + "','" + ruleno + "','" + equipmentname + "');"
 
     await request.query(query)
@@ -2355,7 +2191,7 @@ const getcalculation_9_7_2024 = (req, res) => {
 }
 
 
-const getcalculation = async (req, res) => {
+const getcalculation = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
   const pool = new sql.ConnectionPool(config);
@@ -2367,11 +2203,11 @@ const getcalculation = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     var query = " SELECT [multiplicationfactor] FROM [" + dbName + "].[ECCAnalytics].[Rules] where ruleid ='" + ruleid + "'"
 
     records = await request.query(query)
-
+ 
     return res.status(200).json(records['recordsets'][0])
 
 
@@ -2454,7 +2290,7 @@ const dashboardlogin_9_7_2024 = (req, res) => {
   })
 }
 
-const dashboardlogin_8_8_2024 = async (req, res) => {
+const dashboardlogin = async(req, res) => {
   //ruleid = req.body.ruleid
   console.log(req.originalUrl)
   dbName = config.databse
@@ -2468,11 +2304,11 @@ const dashboardlogin_8_8_2024 = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     login_query = "SELECT * FROM [" + dbName + "].ECCAnalytics.Users where username COLLATE SQL_Latin1_General_CP1_CS_AS ='" + username + "' and pswd COLLATE SQL_Latin1_General_CP1_CS_AS ='" + password + "'"
 
     records = await request.query(login_query)
-
+ 
     if (records['recordsets'][0].length != 0) {
 
       // if(records['recordsets'][0][0].loginstatus == 1 && records['recordsets'][0][0].roles !='MasterAdmin'){
@@ -2486,65 +2322,8 @@ const dashboardlogin_8_8_2024 = async (req, res) => {
         let updateQuery = "update [" + dbName + "].ECCAnalytics.Users set [analyticloginstatus] = 1 where  username ='" + username + "';"
         //updateQuery += "insert into ["+dbName+"].ECCAnalytics.UserLog ([username],[userrole],[logintime]) values ('"+username+"','"+records['recordsets'][0][0].roles+"', CURRENT_TIMESTAMP);"
         updateQuery += "insert into [" + dbName + "].ECCAnalytics.UserLog ([username],[userrole],[logintime],app) values ('" + username + "','" + records['recordsets'][0][0].roles + "', CURRENT_TIMESTAMP,2);"
-        await request.query(updateQuery)
-        return res.status(200).json(data)
-
-      }
-
-    }
-    else {
-      data = { 'status': 'No Data Found' }
-      return res.status(200).json(data)
-    }
-
-  } catch (err) {
-
-    console.error('Error with SQL Server:', err);
-
-  } finally {
-
-    // Close the connection pool
-
-    pool.close();
-  }
-
-}
-
-const dashboardlogin = async (req, res) => {
-  //ruleid = req.body.ruleid
-  console.log(req.originalUrl)
-  dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
-  username = req.body.uid
-  password = req.body.pass
-
-  try {
-
-    await pool.connect();
-
-    const request = pool.request();
-
- //   login_query = "SELECT * FROM [" + dbName + "].ECCAnalytics.Users where username COLLATE SQL_Latin1_General_CP1_CS_AS ='" + username + "' and pswd COLLATE SQL_Latin1_General_CP1_CS_AS ='" + password + "' and  DATEDIFF(day,GETDATE(), accexpire) >= 0 or accexpire IS NULL"
-    login_query = "SELECT * FROM [" + dbName + "].ECCAnalytics.Users where username COLLATE SQL_Latin1_General_CP1_CS_AS ='" + username + "' and pswd COLLATE SQL_Latin1_General_CP1_CS_AS ='" + password + "' and  DATEDIFF(day,GETDATE(), accexpire) >= 0 OR username COLLATE SQL_Latin1_General_CP1_CS_AS ='" + username + "' and pswd COLLATE SQL_Latin1_General_CP1_CS_AS ='" + password + "' and accexpire IS NULL"
-
-    records = await request.query(login_query)
-
-    if (records['recordsets'][0].length != 0) {
-
-      // if(records['recordsets'][0][0].loginstatus == 1 && records['recordsets'][0][0].roles !='MasterAdmin'){
-      if (records['recordsets'][0][0].analyticloginstatus == 1 && records['recordsets'][0][0].roles != 'MasterAdmin') {
-        data = { 'status': 'Already loggedin' }
-        return res.status(200).json(data)
-      } else {
-        data = { 'userid': records['recordsets'][0][0].userid, 'mailid': records['recordsets'][0][0].useremailid, 'roles': records['recordsets'][0][0].roles, 'loginstatus': records['recordsets'][0][0].loginstatus }
-        console.log(records['recordsets'][0][0].username)
-        //------------------------
-        let updateQuery = "update [" + dbName + "].ECCAnalytics.Users set [analyticloginstatus] = 1 where  username ='" + username + "';"
-        //updateQuery += "insert into ["+dbName+"].ECCAnalytics.UserLog ([username],[userrole],[logintime]) values ('"+username+"','"+records['recordsets'][0][0].roles+"', CURRENT_TIMESTAMP);"
-        updateQuery += "insert into [" + dbName + "].ECCAnalytics.UserLog ([username],[userrole],[logintime],app) values ('" + username + "','" + records['recordsets'][0][0].roles + "', CURRENT_TIMESTAMP,2);"
-        await request.query(updateQuery)
-        return res.status(200).json(data)
+       await request.query(updateQuery)
+       return res.status(200).json(data)
 
       }
 
@@ -2599,11 +2378,11 @@ const dashboardlogout_9_7_2024 = (req, res) => {
 }
 
 
-const dashboardlogout = async (req, res) => {
+const dashboardlogout = async(req, res) => {
   console.log(req.originalUrl)
   dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
+  const pool = new sql.ConnectionPool(config);  
+  
   username = req.query.uid
 
   try {
@@ -2611,7 +2390,7 @@ const dashboardlogout = async (req, res) => {
     await pool.connect();
 
     const request = pool.request();
-
+ 
     query = "update [" + dbName + "].ECCAnalytics.Users set [analyticloginstatus] = 0 where  username ='" + username + "';"
     //query += "update  ["+dbName+"].ECCAnalytics.UserLog set [logouttime] = CURRENT_TIMESTAMP where  username ='"+username+"' and logouttime IS NULL;"
     query += "update  [" + dbName + "].ECCAnalytics.UserLog set [logouttime] = CURRENT_TIMESTAMP where  username  COLLATE SQL_Latin1_General_CP1_CS_AS ='" + username + "' and [app] = 2 and logouttime IS NULL and recordid = (SELECT TOP (1) [recordid] from  [" + dbName + "].[ECCAnalytics].[UserLog] where username COLLATE SQL_Latin1_General_CP1_CS_AS ='" + username + "' order by recordid desc);"
@@ -2714,88 +2493,6 @@ const test = (req, res) => {
 
 }
 
-const devicestatus = async (req, res) => {
-  console.log(req.originalUrl)
-  dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
-  try {
-    await pool.connect();
-    const request = pool.request();
-
-    eqpname = req.query.eqpname
-   // query = "SELECT DV.[equipmentname],[deviceid],[ip],[countryname],[campusname] FROM [" + dbName + "].[ECCAnalytics].Devices DV left join [" + dbName + "].[ECCAnalytics].project PJ on DV.equipmentname = PJ.equipmentname " 
-   query = " select distinct tbl1.deviceid,tbl1.dated,tbl2.ip,tbl2.countryname,tbl2.campusname from (SELECT  DV.[deviceid],max(DP.dated) dated FROM [" + dbName + "].[ECCAnalytics].Devices DV "
-   query += " LEFT JOIN [" + dbName + "].[ECCAnalytics].DataPointValue DP "
-    query += " ON DV.deviceid = DP.deviceid group by DV.deviceid) tbl1 LEFT JOIN (SELECT distinct DV.[deviceid],[ip],[countryname],[campusname] FROM [" + dbName + "].[ECCAnalytics].Devices DV "
-    query += " left join [" + dbName + "].[ECCAnalytics].project PJ on DV.equipmentname = PJ.equipmentname) tbl2 " 
-    query += " on tbl1.deviceid = tbl2.deviceid where 1 = 1"
-
-    if(typeof req.body.cn !== 'undefined' ){
-      query += " and tbl2.countryname = '"+req.body.cn+"'"
-    }
-    
-    if(typeof req.body.cm !== 'undefined' ){
-      query += " and tbl2.campusname = '"+req.body.cm+"'"
-    }
-    
-    if(typeof req.body.dv !== 'undefined' ){
-      query += " and tbl1.deviceid = '"+req.body.dv+"'"
-    }
-
-    if(typeof req.body.ip !== 'undefined' ){
-      query += " and tbl2.ip = '"+req.body.ip+"'"
-    }
-    
-    console.log(query)
-    // DATEDIFF(HOUR, dated, GETDATE()) > 24"
-    records = await request.query(query)
-
-    return res.status(200).json(records['recordsets'][0])
-  } catch (err) {
-    console.error('Error with SQL Server:', err);
-  } finally {
-    // Close the connection pool
-    pool.close();
-  }
-
-}
-
-const escalationalarm = async (req, res) => {
-  console.log(req.originalUrl)
-  dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
-
-  try {
-
-    await pool.connect();
-
-    const request = pool.request();
-
-    location = req.query.lc
-
-    query = "SELECT  [alarmsemailid] FROM  [" + dbName + "].[ECCAnalytics].[EscalationMatrixAlarm] where [EscalationMatrixAlarm].[location] = '" + location + "';"
-
-    records = await request.query(query)
-
-    return res.status(200).json(records['recordsets'][0])
-
-
-  } catch (err) {
-
-    console.error('Error with SQL Server:', err);
-
-  } finally {
-
-    // Close the connection pool
-
-    pool.close();
-  }
-
-
-}
-
 /*************************************************** END OF TEST API************************************************* */
 
 
@@ -2824,8 +2521,6 @@ module.exports = {
   dashboardlogout,
   avgdpval,
   getbuildingvariablevalue,
-  devicestatus,
-  escalationalarm,
   test
 
 }

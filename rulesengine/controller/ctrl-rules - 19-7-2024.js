@@ -135,8 +135,7 @@ const addalarmdata = async (req, res) => {
     query = " INSERT INTO [" + dbName + "].[ECCAnalytics].[Alarm] ([datapointrecordid],[ruleid],[deviceid],[analysisname],[analyticsummary],[measuretype],[alarmstatus],[buildingname],[alarmontimestamp],[escalationstage],[ruleno],[equipmentname]) VALUES (" + datapointrecordid + ",'" + ruleid + "','" + deviceid + "','" + analysisname + "','" + analyticsummary + "','" + measuretype + "'," + alarmstatus + ",'" + building + "',CURRENT_TIMESTAMP,'" + escalationstage + "','" + ruleno + "','" + equipmentname + "'); "
 
     //query = "INSERT INTO [" + dbName + "].[ECCAnalytics].[Alarm_History] ([datapointrecordid],[ruleid],[deviceid],[analysisname],[analyticsummary],[measuretype],[costavoided],[energysaved],[alarmstatus],[alarmontimestamp],[escalationstage],[buildingname],[taskstatus],[ruleno],[equipmentname],[historyddate],[modifier]) VALUES (" + datapointrecordid + ",'" + ruleid + "','" + deviceid + "','" + analysisname + "','" + analyticsummary + "','" + measuretype + "','costavoided', 'energysaved'," + alarmstatus + ",CURRENT_TIMESTAMP,'" + escalationstage + "','" + building + "','[taskstatus]','" + ruleno + "','" + equipmentname + "','historyddate','modifier');"
-    query += " INSERT INTO [" + dbName + "].[ECCAnalytics].[Alarm_History] ([alarmid],[datapointrecordid],[ruleid],[deviceid],[analysisname],[analyticsummary],[measuretype],[alarmstatus],[alarmontimestamp],[escalationstage],[buildingname],[taskstatus],[ruleno],[equipmentname],[historydate],[modifier]) VALUES ((SELECT TOP (1) [alarmid] FROM [" + dbName + "].[ECCAnalytics].[Alarm] order by alarmid desc )," + datapointrecordid + ",'" + ruleid + "','" + deviceid + "','" + analysisname + "','" + analyticsummary + "','" + measuretype + "'," + alarmstatus + ",CURRENT_TIMESTAMP,'" + escalationstage + "','" + building + "',0,'" + ruleno + "','" + equipmentname + "',CURRENT_TIMESTAMP,'SYSTEM');"
-    console.log(query)
+    query += " INSERT INTO [" + dbName + "].[ECCAnalytics].[Alarm_History] ([alarmid],[datapointrecordid],[ruleid],[deviceid],[analysisname],[analyticsummary],[measuretype],[alarmstatus],[alarmontimestamp],[escalationstage],[buildingname],[taskstatus],[ruleno],[equipmentname],[historyddate],[modifier]) VALUES ((SELECT TOP (1) [alarmid] FROM [" + dbName + "].[ECCAnalytics].[Alarm] order by alarmid desc )," + datapointrecordid + ",'" + ruleid + "','" + deviceid + "','" + analysisname + "','" + analyticsummary + "','" + measuretype + "'," + alarmstatus + ",CURRENT_TIMESTAMP,'" + escalationstage + "','" + building + "',0,'" + ruleno + "','" + equipmentname + "',CURRENT_TIMESTAMP,'SYSTEM');"
     await request.query(query)
 
     return res.status(200).json({ 'status': 'success' })
@@ -353,7 +352,7 @@ const totaldatapoints = (req, res) => {
 
 
 
-const postdatapointvalue_29_07_2024 = (req, res) => {
+const postdatapointvalue = (req, res) => {
   console.log(req.originalUrl);
 
   //  dic =  req.body.ruleid
@@ -391,50 +390,6 @@ const postdatapointvalue_29_07_2024 = (req, res) => {
 
 }
 
-const postdatapointvalue = async (req, res) => {
-  console.log(req.originalUrl)
-  dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
-  try {
-    await pool.connect();
-    const request = pool.request();
-
-    qry2Values = ""
-    count = 0
-    sqlPart = 1
-    for (const dic of req.body.data) {
-      count++;
-      //qry2Values+="('"+dic['datapointid']+"', '"+dic['deviceid']+"', '"+dic['datapoint']+"', '"+dic['datapointvalue']+"', CURRENT_TIMESTAMP,'"+dic['units']+"'),"
-      qry2Values += "('" + dic['datapointid'] + "', '" + dic['deviceid'] + "', '" + dic['pointid'] + "','" + dic['datapointvalue'] + "', CURRENT_TIMESTAMP),"
-      if (count >= 900) {
-        var qry = "INSERT INTO [" + dbName + "].[ECCAnalytics].DataPointValue ( datapointid,deviceid,pointid,datapointvalue,dated) VALUES " + qry2Values
-
-        qry = qry.substring(0, qry.length - 1);
-        await request.query(qry)
-        qry2Values = ""
-
-      }else{
-        var qry = "INSERT INTO [" + dbName + "].[ECCAnalytics].DataPointValue ( datapointid,deviceid,pointid,datapointvalue,dated) VALUES " + qry2Values
-
-        qry = qry.substring(0, qry.length - 1);
-        await request.query(qry)
-        qry2Values = ""
-
-      }
-
-    }
-
-
-    return res.status(200).json({ 'status': 'success' })
-  } catch (err) {
-    console.error('Error with SQL Server:', err);
-  } finally {
-    // Close the connection pool
-    pool.close();
-  }
-
-}
 
 /*888888888********/
 
@@ -1324,112 +1279,6 @@ const geteqvariablesforrulesengine = async (req, res) => {
 }
 
 
-const alarmescalationmatrix1 = async (req, res) => {
-  console.log(req.originalUrl)
-  dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
-
-  try {
-
-    await pool.connect();
-
-    const request = pool.request();
-
-    location = req.query.lc
-
-    query = "SELECT  [escalation1 (IF Alarm Not Rectified Within 3 Days)] FROM  [" + dbName + "].[ECCAnalytics].[AlarmEscalationMatrix1] where [AlarmEscalationMatrix1].[location] = '" + location + "';"
-
-    records = await request.query(query)
-
-    return res.status(200).json(records['recordsets'][0])
-
-
-  } catch (err) {
-
-    console.error('Error with SQL Server:', err);
-
-  } finally {
-
-    // Close the connection pool
-
-    pool.close();
-  }
-
-
-}
-
-const alarmescalationmatrix2 = async (req, res) => {
-  console.log(req.originalUrl)
-  dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
-
-  try {
-
-    await pool.connect();
-
-    const request = pool.request();
-
-    location = req.query.lc
-
-    query = "SELECT  [escalation2 (IF Alarm Not Rectified Within 5 Days)] FROM  [" + dbName + "].[ECCAnalytics].[AlarmEscalationMatrix2] where [AlarmEscalationMatrix2].[location] = '" + location + "';"
-
-    records = await request.query(query)
-
-    return res.status(200).json(records['recordsets'][0])
-
-
-  } catch (err) {
-
-    console.error('Error with SQL Server:', err);
-
-  } finally {
-
-    // Close the connection pool
-
-    pool.close();
-  }
-
-
-}
-
-
-const alarmescalationmatrix3 = async (req, res) => {
-  console.log(req.originalUrl)
-  dbName = config.databse
-  const pool = new sql.ConnectionPool(config);
-
-
-  try {
-
-    await pool.connect();
-
-    const request = pool.request();
-
-    location = req.query.lc
-
-    query = "SELECT  [escalation3 (IF Alarm Not Rectified Within 7 Days)] FROM  [" + dbName + "].[ECCAnalytics].[AlarmEscalationMatrix3] where [AlarmEscalationMatrix3].[location] = '" + location + "';"
-
-    records = await request.query(query)
-
-    return res.status(200).json(records['recordsets'][0])
-
-
-  } catch (err) {
-
-    console.error('Error with SQL Server:', err);
-
-  } finally {
-
-    // Close the connection pool
-
-    pool.close();
-  }
-
-
-}
-
 /********************************************************************************************************************* */
 module.exports = {
 
@@ -1454,11 +1303,7 @@ module.exports = {
   getruletimerrecord,
   updateallruletimerrecord,
   getdatapointsforrulesengine,
-  geteqvariablesforrulesengine,
-  alarmescalationmatrix1,
-  alarmescalationmatrix2,
-  alarmescalationmatrix3
-
+  geteqvariablesforrulesengine
 
 
 }
