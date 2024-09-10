@@ -136,7 +136,6 @@ const addalarmdata = async (req, res) => {
 
     //query = "INSERT INTO [" + dbName + "].[ECCAnalytics].[Alarm_History] ([datapointrecordid],[ruleid],[deviceid],[analysisname],[analyticsummary],[measuretype],[costavoided],[energysaved],[alarmstatus],[alarmontimestamp],[escalationstage],[buildingname],[taskstatus],[ruleno],[equipmentname],[historyddate],[modifier]) VALUES (" + datapointrecordid + ",'" + ruleid + "','" + deviceid + "','" + analysisname + "','" + analyticsummary + "','" + measuretype + "','costavoided', 'energysaved'," + alarmstatus + ",CURRENT_TIMESTAMP,'" + escalationstage + "','" + building + "','[taskstatus]','" + ruleno + "','" + equipmentname + "','historyddate','modifier');"
     query += " INSERT INTO [" + dbName + "].[ECCAnalytics].[Alarm_History] ([alarmid],[datapointrecordid],[ruleid],[deviceid],[analysisname],[analyticsummary],[measuretype],[alarmstatus],[alarmontimestamp],[escalationstage],[buildingname],[taskstatus],[ruleno],[equipmentname],[historydate],[modifier]) VALUES ((SELECT TOP (1) [alarmid] FROM [" + dbName + "].[ECCAnalytics].[Alarm] order by alarmid desc )," + datapointrecordid + ",'" + ruleid + "','" + deviceid + "','" + analysisname + "','" + analyticsummary + "','" + measuretype + "'," + alarmstatus + ",CURRENT_TIMESTAMP,'" + escalationstage + "','" + building + "',0,'" + ruleno + "','" + equipmentname + "',CURRENT_TIMESTAMP,'SYSTEM');"
-    console.log(query)
     await request.query(query)
 
     return res.status(200).json({ 'status': 'success' })
